@@ -1,50 +1,114 @@
-# Welcome to your Expo app 👋
+# Job Finder App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native job finder application built with Expo. The app allows users to sign in, browse paginated job listings, search by company, view job details, apply to jobs, manage applied jobs, and update their profile information.
 
-## Get started
+## Features
 
-1. Install dependencies
+- Authentication with login and register screens
+- Persistent session storage with Expo SecureStore
+- Paginated job listing with infinite scroll
+- Company-based job search
+- Job detail screen with company, location, salary, description, date, and keywords
+- Apply and withdraw application flow
+- Applied jobs list with persistent local storage
+- Profile screen with editable user information
+- Profile image preview with fallback image handling
+- Date of birth selection with an in-app calendar modal
+- Turkish phone number formatting, for example `507 585 40 33`
+- Logout confirmation modal
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+- React Native
+- Expo
+- Expo Router
+- Redux Toolkit
+- React Redux
+- Axios
+- React Hook Form
+- Expo SecureStore
+- Expo Image
+- React Native Size Matters
 
-   ```bash
-   npx expo start
-   ```
+## API
 
-In the output, you'll find options to open the app in a
+The app uses the SHFT Job Finder API:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```txt
+https://novel-project-ntj8t.ampt.app/api
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Authenticated requests use the access token returned by the login/register endpoints.
 
-## Learn more
+## Getting Started
 
-To learn more about developing your project with Expo, look at the following resources:
+Install dependencies:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm install
+```
 
-## Join the community
+Start the Expo development server:
 
-Join our community of developers creating universal apps.
+```bash
+npx expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Run on a platform:
+
+```bash
+npm run ios
+npm run android
+npm run web
+```
+
+## Scripts
+
+```bash
+npm run start
+npm run ios
+npm run android
+npm run web
+npm run lint
+```
+
+## Project Structure
+
+```txt
+app/
+  (auth)/          Login and register screens
+  (tabs)/          Main tab screens
+  job/[id].tsx     Job detail screen
+src/
+  api/             Axios API clients
+  components/      Shared UI components
+  store/           Redux store and slices
+  theme/           Colors and spacing helpers
+  types/           Shared TypeScript types
+```
+
+## Main Screens
+
+- `Job Listings`: Browse and search jobs with paginated loading.
+- `Job Detail`: View details and apply or withdraw.
+- `Applied Jobs`: View jobs the user has applied to.
+- `Profile`: Edit profile information and sign out.
+
+## Persistence
+
+- User session is stored securely with `expo-secure-store`.
+- Applied jobs are also persisted locally so they remain after app refresh/reload.
+
+## Validation
+
+The project was checked with:
+
+```bash
+npx tsc --noEmit
+npm run lint
+```
+
+## Notes
+
+- The app does not require an `.env` file because the API base URL is defined in `src/api/client.ts`.
+- If a previously stored token expires or becomes invalid, sign out and sign in again to refresh the session.
