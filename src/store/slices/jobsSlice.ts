@@ -5,7 +5,8 @@ import { getJobsRequest } from "../../api/jobsApi";
 import { logoutUser } from "./authSlice";
 import type { Job } from "../../types";
 
-const APPLIED_JOBS_KEY = "jobapp_applied_jobs";
+const getAppliedJobsKey = (userKey?: string) =>
+  `jobapp_applied_jobs_${userKey ?? "guest"}`;
 
 type GetJobsArgs = {
   page?: number;
@@ -64,14 +65,30 @@ export const getJobs = createAsyncThunk(
   }
 );
 
-const saveAppliedJobs = async (jobs: Job[]) => {
-  await SecureStore.setItemAsync(APPLIED_JOBS_KEY, JSON.stringify(jobs));
+const getCurrentUserKey = (state: any) => {
+  const user = state.auth.session?.user;
+
+  return user?.id ?? user?.email;
+};
+
+const saveAppliedJobs = async (jobs: Job[], userKey?: string) => {
+  await SecureStore.setItemAsync(
+    getAppliedJobsKey(userKey),
+    JSON.stringify(jobs)
+  );
 };
 
 export const restoreAppliedJobs = createAsyncThunk(
   "jobs/restoreAppliedJobs",
-  async () => {
-    const storedJobs = await SecureStore.getItemAsync(APPLIED_JOBS_KEY);
+  async (_, thunkApi) => {
+    const state = thunkApi.getState() as any;
+    const userKey = getCurrentUserKey(state);
+
+    if (!userKey) {
+      return [];
+    }
+
+    const storedJobs = await SecureStore.getItemAsync(getAppliedJobsKey(userKey));
 
     return storedJobs ? (JSON.parse(storedJobs) as Job[]) : [];
   }
@@ -82,10 +99,11 @@ export const applyJobAndSave = createAsyncThunk(
   async (job: Job, thunkApi) => {
     const state = thunkApi.getState() as any;
     const appliedJobs = state.jobs.appliedJobs as Job[];
+    const userKey = getCurrentUserKey(state);
     const alreadyApplied = appliedJobs.some(item => item.id === job.id);
     const nextAppliedJobs = alreadyApplied ? appliedJobs : [...appliedJobs, job];
 
-    await saveAppliedJobs(nextAppliedJobs);
+    await saveAppliedJobs(nextAppliedJobs, userKey);
 
     return nextAppliedJobs;
   }
@@ -96,9 +114,10 @@ export const withdrawJobAndSave = createAsyncThunk(
   async (jobId: string, thunkApi) => {
     const state = thunkApi.getState() as any;
     const appliedJobs = state.jobs.appliedJobs as Job[];
+    const userKey = getCurrentUserKey(state);
     const nextAppliedJobs = appliedJobs.filter(job => job.id !== jobId);
 
-    await saveAppliedJobs(nextAppliedJobs);
+    await saveAppliedJobs(nextAppliedJobs, userKey);
 
     return nextAppliedJobs;
   }
@@ -160,6 +179,17 @@ const jobsSlice = createSlice({
       })
       .addCase(withdrawJobAndSave.fulfilled, (state, action) => {
         state.appliedJobs = action.payload;
+      })
+      .addCase(logoutUser.fulfilled, state => {
+        state.jobs = [];
+        state.appliedJobs = [];
+        state.loading = false;
+        state.loadingMore = false;
+        state.error = null;
+        state.page = 1;
+        state.perPage = 10;
+        state.total = 0;
+        state.hasNextPage = false;
       });
   },
 });
